@@ -23,6 +23,10 @@
   "source": "src/index.js",
   "main": "dist/main.js",
   "module": "dist/main.module.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "fcl-bundle",
     "watch": "fcl-bundle --watch",
@@ -34,7 +38,8 @@
     "preversion": "npm run lint && npm run test",
     "version": "npm run build",
     "postversion": "git push && git push --tags",
-    "pack-preview": "npm pack --dry-run"
+    "pack-preview": "npm pack --dry-run",
+    "publish": "npm publish --access public"
   },
   "dependencies": {
     "@babel/runtime": "^7.18.6",
