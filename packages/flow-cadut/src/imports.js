@@ -36,7 +36,7 @@
   /                               => end of regexp
 */
 export const REGEXP_IMPORT =
-  /import\s+(([\w\d]+\s*,\s*)*[\w\d]+)\s+from\s*([\w\d".\\/]+)/g
+  /import\s+(([\w\d]+\s*,\s*)*[\w\d]+)\s+from\s*([\w\d".\\/]+)/g;
 
 /*
   === REGEXP_IMPORT_CONTRACT ===
@@ -46,28 +46,28 @@ export const REGEXP_IMPORT =
   ([\w\d]+)                       => >>MATCH[1]<< match individual contract name (one or more word or digit)
   /g                              => end of regexp, g - global flag (find all)
 */
-export const REGEXP_IMPORT_CONTRACT = /([\w\d]+)/g
+export const REGEXP_IMPORT_CONTRACT = /([\w\d]+)/g;
 
 /**
  * Returns address map for contracts defined in template code.
  * @param {string} code - Cadence code to parse.
  * @returns {*}
  */
-export const extractImports = code => {
+export const extractImports = (code) => {
   if (!code || code.length === 0) {
-    return {}
+    return {};
   }
 
   return [...code.matchAll(REGEXP_IMPORT)].reduce((contracts, match) => {
     const contractsStr = match[1],
-      address = match[3]
+      address = match[3];
 
-    contractsStr.match(REGEXP_IMPORT_CONTRACT).forEach(contract => {
-      contracts[contract] = address
-    })
-    return contracts
-  }, {})
-}
+    contractsStr.match(REGEXP_IMPORT_CONTRACT).forEach((contract) => {
+      contracts[contract] = address;
+    });
+    return contracts;
+  }, {});
+};
 
 /**
  * Returns list of missing imports.
@@ -75,20 +75,20 @@ export const extractImports = code => {
  * @param {Object.<string, string>} addressMap - contract name as a key and address where it's deployed as value
  */
 export const missingImports = (code, addressMap = {}) => {
-  const importsList = extractImports(code)
-  const missing = []
+  const importsList = extractImports(code);
+  const missing = [];
 
   for (const key in importsList) {
     if (
       !addressMap[key] &&
       Object.prototype.hasOwnProperty.call(importsList, key)
     ) {
-      missing.push(key)
+      missing.push(key);
     }
   }
 
-  return missing
-}
+  return missing;
+};
 
 /**
  * Reports missing imports.
@@ -96,10 +96,10 @@ export const missingImports = (code, addressMap = {}) => {
  * @param {string} prefix - error message prefix
  */
 export const report = (list = [], prefix = "") => {
-  const errorMessage = `Missing imports for contracts:`
-  const message = prefix ? `${prefix} ${errorMessage}` : errorMessage
-  console.error(message, list)
-}
+  const errorMessage = `Missing imports for contracts:`;
+  const message = prefix ? `${prefix} ${errorMessage}` : errorMessage;
+  console.error(message, list);
+};
 
 /**
  * Reports missing imports.
@@ -108,11 +108,11 @@ export const report = (list = [], prefix = "") => {
  * @param {string} [prefix] - prefix to add to error message
  */
 export const reportMissingImports = (code, addressMap, prefix = "") => {
-  const list = missingImports(code, addressMap)
+  const list = missingImports(code, addressMap);
   if (list.length > 0) {
-    report(list, prefix)
+    report(list, prefix);
   }
-}
+};
 
 /**
  * Returns Cadence template code with replaced import addresses
@@ -123,25 +123,25 @@ export const reportMissingImports = (code, addressMap, prefix = "") => {
  * @returns {*}
  */
 export const replaceImportAddresses = (code, addressMap, byName = true) => {
-  return code.replace(REGEXP_IMPORT, importLine => {
-    const contracts = extractImports(importLine)
+  return code.replace(REGEXP_IMPORT, (importLine) => {
+    const contracts = extractImports(importLine);
     const contractMap = Object.keys(contracts).reduce((map, contract) => {
-      const address = contracts[contract]
-      const key = byName ? contract : address
+      const address = contracts[contract];
+      const key = byName ? contract : address;
       const newAddress =
-        addressMap instanceof Function ? addressMap(key) : addressMap[key]
+        addressMap instanceof Function ? addressMap(key) : addressMap[key];
 
       // If the address is not inside addressMap we shall not alter import statement
-      const validAddress = newAddress || address
-      map[validAddress] = (map[validAddress] ?? []).concat(contract)
-      return map
-    }, {})
+      const validAddress = newAddress || address;
+      map[validAddress] = (map[validAddress] ?? []).concat(contract);
+      return map;
+    }, {});
 
     return Object.keys(contractMap)
       .reduce((res, addr) => {
-        const contractsStr = contractMap[addr].join(", ")
-        return res.concat(`import ${contractsStr} from ${addr}`)
+        const contractsStr = contractMap[addr].join(", ");
+        return res.concat(`import ${contractsStr} from ${addr}`);
       }, [])
-      .join("\n")
-  })
-}
+      .join("\n");
+  });
+};
